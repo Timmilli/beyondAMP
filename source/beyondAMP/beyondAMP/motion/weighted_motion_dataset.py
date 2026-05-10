@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import torch
 from typing import List, Literal
-from isaaclab.utils import configclass
-from .motion_dataset import MotionDataset, MotionDatasetCfg
+
+from .motion_dataset import MotionDataset, MotionDatasetCfg, configclass
 
 class WeightedMotionDataset(MotionDataset):
     """
