@@ -33,7 +33,7 @@ class G1FlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
 @configclass
 class G1FlatWoStateEstimationPPORunnerCfg(G1FlatPPORunnerCfg):
     run_name = "wo"
-    init_weight = "/home/ununtu/code/renforce/trackerLab/logs/rsl_rl/g1_flat/2025-11-03_15-02-08/model_29999.pt"
+    init_weight = "logs/rsl_rl/g1_flat/model_29999.pt"
 
 
 LOW_FREQ_SCALE = 0.5
