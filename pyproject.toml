@@ -1,5 +1,5 @@
 [project]
-name = "beyondamp-workspace"
+name = "beyondAMP"
 version = "0.1.0"
 description = "UV workspace for beyondAMP"
 readme = "README.md"
