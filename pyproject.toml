@@ -28,6 +28,18 @@ beyondAMP = { path = "source/beyondAMP", editable = true }
 beyondMimic = { path = "source/third_party/beyondMimic", editable = true }
 sim2simlib = { path = "source/third_party/sim2simlib", editable = true }
 
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "source"}
+
+[tool.setuptools.packages.find]
+where = ["source"]
+include = ["beyondAMP*", "rsl_rl*", "amp_tasks*", "beyondMimic*", "sim2simlib*"]
+exclude = ["data*", "logs*", "scripts*", "docs*"]
+
 [tool.ruff]
 indent-width = 4
 exclude = [
