@@ -1,0 +1,8 @@
+[project]
+name = "beyondMimic"
+version = "0.1.0"
+description = "tracking task for isaacLab"
+license = "BSD-3-Clause"
+requires-python = ">=3.10"
+keywords = ["extension", "isaacLab"]
+dependencies = []

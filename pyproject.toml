@@ -1,12 +1,32 @@
 [project]
-name = "beyondamp"
+name = "beyondamp-workspace"
 version = "0.1.0"
-description = "UV for beyondAMP"
+description = "UV workspace for beyondAMP"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "mjlab==1.3.0",
+    "scipy>=1.18.0",
+    "mujoco==3.9.0",
+    "mujoco-warp==3.8.1",
+	"warp-lang==1.12.0",
+    "rsl_rl_amp",
+    "amp_tasks",
+    "amp_tasks_mjlab",
+    "beyondAMP",
+    "beyondMimic",
+    "sim2simlib",
 ]
+
+
+[tool.uv.sources]
+robotlib = { git = "https://github.com/Renforce-Dynamics/robotlib" }
+rsl_rl_amp = { path = "source/rsl_rl_amp", editable = true }
+amp_tasks = { path = "source/amp_tasks", editable = true }
+amp_tasks_mjlab = { path = "source/amp_tasks_mjlab", editable = true }
+beyondAMP = { path = "source/beyondAMP", editable = true }
+beyondMimic = { path = "source/third_party/beyondMimic", editable = true }
+sim2simlib = { path = "source/third_party/sim2simlib", editable = true }
 
 [tool.ruff]
 indent-width = 4
