@@ -99,7 +99,9 @@ uv pip install -e source/amp_tasks_mjlab   # registers Mjlab-AMP-* tasks
 ```bash
 uv run python scripts/factoryMjlab/train.py \
     Mjlab-AMP-Velocity-Flat-Unitree-G1 \
-    --agent.amp-data.motion-files data/demo/punch_000.npz
+    --agent.amp-data.motion-files data/demo/punch/punch.npz \
+    --env.scene.num_envs 2048 4096 \
+    --agent.max-iterations 10000
 ```
 
 Tasks are looked up via `mjlab.tasks.registry`; the env is wrapped with `beyondAMP.mjlab.rsl_rl.AMPEnvWrapper` and trained with `rsl_rl_amp.runners.AMPOnPolicyRunner`. Registered out of the box:
