@@ -12,4 +12,3 @@ from .config import (
     Sim2SimBeyondMimicCfg,
 )
 from .sim2sim_beyond_mimic import Sim2SimBeyondMimic
-

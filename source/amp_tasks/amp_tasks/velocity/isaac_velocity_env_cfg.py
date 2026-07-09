@@ -62,7 +62,7 @@ class MySceneCfg(InteractiveSceneCfg):
     )
     # robots
     robot: ArticulationCfg = MISSING
-    
+
     # lights
     light = AssetBaseCfg(
         prim_path="/World/light",
@@ -73,7 +73,11 @@ class MySceneCfg(InteractiveSceneCfg):
         spawn=sim_utils.DomeLightCfg(color=(0.13, 0.13, 0.13), intensity=1000.0),
     )
     contact_forces = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/.*", history_length=3, track_air_time=True, force_threshold=10.0, debug_vis=True
+        prim_path="{ENV_REGEX_NS}/Robot/.*",
+        history_length=3,
+        track_air_time=True,
+        force_threshold=10.0,
+        debug_vis=True,
     )
 
 
@@ -93,40 +97,60 @@ class CommandsCfg:
         heading_control_stiffness=0.5,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(0.0, 0.8), lin_vel_y=(-0.5, 0.5), ang_vel_z=(-0.3, 0.3), heading=(-math.pi, math.pi)
+            lin_vel_x=(0.0, 0.8),
+            lin_vel_y=(-0.5, 0.5),
+            ang_vel_z=(-0.3, 0.3),
+            heading=(-math.pi, math.pi),
         ),
     )
 
 
 @configclass
 class ActionsCfg:
-    joint_pos = mdp.JointPositionActionCfg(asset_name="robot", joint_names=[".*"], use_default_offset=True)
+    joint_pos = mdp.JointPositionActionCfg(
+        asset_name="robot", joint_names=[".*"], use_default_offset=True
+    )
 
 
 @configclass
 class ObservationsCfg:
     @configclass
     class PolicyCfg(ObsGroup):
-        projected_gravity   = ObsTerm(func=mdp.projected_gravity, params={"asset_cfg": SceneEntityCfg("robot")})
-        velocity_commands   = ObsTerm(func=mdp.generated_commands, params={"command_name": "base_velocity"})
-        base_lin_vel        = ObsTerm(func=mdp.base_lin_vel, noise=Unoise(n_min=-0.5, n_max=0.5))
-        base_ang_vel        = ObsTerm(func=mdp.base_ang_vel, noise=Unoise(n_min=-0.2, n_max=0.2))
-        joint_pos           = ObsTerm(func=mdp.joint_pos_rel, noise=Unoise(n_min=-0.01, n_max=0.01))
-        joint_vel           = ObsTerm(func=mdp.joint_vel_rel, noise=Unoise(n_min=-0.5, n_max=0.5))
-        actions             = ObsTerm(func=mdp.last_action)
+        projected_gravity = ObsTerm(
+            func=mdp.projected_gravity, params={"asset_cfg": SceneEntityCfg("robot")}
+        )
+        velocity_commands = ObsTerm(
+            func=mdp.generated_commands, params={"command_name": "base_velocity"}
+        )
+        base_lin_vel = ObsTerm(
+            func=mdp.base_lin_vel, noise=Unoise(n_min=-0.5, n_max=0.5)
+        )
+        base_ang_vel = ObsTerm(
+            func=mdp.base_ang_vel, noise=Unoise(n_min=-0.2, n_max=0.2)
+        )
+        joint_pos = ObsTerm(
+            func=mdp.joint_pos_rel, noise=Unoise(n_min=-0.01, n_max=0.01)
+        )
+        joint_vel = ObsTerm(func=mdp.joint_vel_rel, noise=Unoise(n_min=-0.5, n_max=0.5))
+        actions = ObsTerm(func=mdp.last_action)
+
         def __post_init__(self):
             self.enable_corruption = True
             self.concatenate_terms = True
 
     @configclass
     class PrivilegedCfg(ObsGroup):
-        projected_gravity   = ObsTerm(func=mdp.projected_gravity, params={"asset_cfg": SceneEntityCfg("robot")})
-        velocity_commands = ObsTerm(func=mdp.generated_commands, params={"command_name": "base_velocity"})
-        base_lin_vel        = ObsTerm(func=mdp.base_lin_vel)
-        base_ang_vel        = ObsTerm(func=mdp.base_ang_vel)
-        joint_pos           = ObsTerm(func=mdp.joint_pos_rel)
-        joint_vel           = ObsTerm(func=mdp.joint_vel_rel)
-        actions             = ObsTerm(func=mdp.last_action)
+        projected_gravity = ObsTerm(
+            func=mdp.projected_gravity, params={"asset_cfg": SceneEntityCfg("robot")}
+        )
+        velocity_commands = ObsTerm(
+            func=mdp.generated_commands, params={"command_name": "base_velocity"}
+        )
+        base_lin_vel = ObsTerm(func=mdp.base_lin_vel)
+        base_ang_vel = ObsTerm(func=mdp.base_ang_vel)
+        joint_pos = ObsTerm(func=mdp.joint_pos_rel)
+        joint_vel = ObsTerm(func=mdp.joint_vel_rel)
+        actions = ObsTerm(func=mdp.last_action)
 
     # observation groups
     policy: PolicyCfg = PolicyCfg()
@@ -161,7 +185,12 @@ class EventCfg:
         func=mdp.reset_to_ref_motion_dataset,
         mode="reset",
         params={
-            "pose_range": {"x": (0.0, 0.0), "y": (0.0, 0.0), "z": (0.05, 0.06),"yaw": (0, 0)},
+            "pose_range": {
+                "x": (0.0, 0.0),
+                "y": (0.0, 0.0),
+                "z": (0.05, 0.06),
+                "yaw": (0, 0),
+            },
             "velocity_range": {
                 "x": (0.0, 0.0),
                 "y": (0.0, 0.0),
@@ -187,10 +216,14 @@ class EventCfg:
 @configclass
 class RewardsCfg:
     track_lin_vel_xy_exp = RewTerm(
-        func=mdp.track_lin_vel_xy_exp_torso, weight=35.0, params={"command_name": "base_velocity", "std": math.sqrt(0.3)}
+        func=mdp.track_lin_vel_xy_exp_torso,
+        weight=35.0,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.3)},
     )
     track_ang_vel_z_exp = RewTerm(
-        func=mdp.track_ang_vel_z_exp_torso, weight=5.0, params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
+        func=mdp.track_ang_vel_z_exp_torso,
+        weight=5.0,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
     )
     action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1e-1)
     joint_limit = RewTerm(
@@ -204,7 +237,7 @@ class RewardsCfg:
         params={
             "sensor_cfg": SceneEntityCfg(
                 "contact_forces",
-                body_names=[".*torso.*",".*shoulder.*",".*hip.*",".*elbow.*"]
+                body_names=[".*torso.*", ".*shoulder.*", ".*hip.*", ".*elbow.*"],
             ),
             "threshold": 1.0,
         },
@@ -216,10 +249,13 @@ class TerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
     base_contact = DoneTerm(
         func=mdp.illegal_contact,
-        params={"sensor_cfg": SceneEntityCfg(
-            "contact_forces", 
-            body_names=["torso_link" ,".*hip.*",".*shoulder.*",".*elbow.*"]
-        ), "threshold": 1.0},
+        params={
+            "sensor_cfg": SceneEntityCfg(
+                "contact_forces",
+                body_names=["torso_link", ".*hip.*", ".*shoulder.*", ".*elbow.*"],
+            ),
+            "threshold": 1.0,
+        },
     )
     # base_height = DoneTerm(func=mdp.root_height_below_minimum, params={"minimum_height": 0.2})
     # bad_orientation = DoneTerm(func=mdp.bad_orientation, params={"limit_angle": 0.8})
@@ -261,4 +297,3 @@ class IsaacVelocityEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.render_interval = self.decimation
         self.sim.physics_material = self.scene.terrain.physics_material
         self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**15
-

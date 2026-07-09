@@ -29,7 +29,12 @@ class RslRlVecEnvWrapper(VecEnv):
         https://github.com/leggedrobotics/rsl_rl/blob/master/rsl_rl/env/vec_env.py
     """
 
-    def __init__(self, env: ManagerBasedRLEnv | DirectRLEnv, clip_actions: float | None = None, **kwargs):
+    def __init__(
+        self,
+        env: ManagerBasedRLEnv | DirectRLEnv,
+        clip_actions: float | None = None,
+        **kwargs,
+    ):
         """Initializes the wrapper.
 
         Note:
@@ -43,7 +48,9 @@ class RslRlVecEnvWrapper(VecEnv):
             ValueError: When the environment is not an instance of :class:`ManagerBasedRLEnv` or :class:`DirectRLEnv`.
         """
         # check that input is valid
-        if not isinstance(env.unwrapped, ManagerBasedRLEnv) and not isinstance(env.unwrapped, DirectRLEnv):
+        if not isinstance(env.unwrapped, ManagerBasedRLEnv) and not isinstance(
+            env.unwrapped, DirectRLEnv
+        ):
             raise ValueError(
                 "The environment must be inherited from ManagerBasedRLEnv or DirectRLEnv. Environment type:"
                 f" {type(env)}"
@@ -65,15 +72,24 @@ class RslRlVecEnvWrapper(VecEnv):
         if hasattr(self.unwrapped, "observation_manager"):
             self.num_obs = self.unwrapped.observation_manager.group_obs_dim["policy"][0]
         else:
-            self.num_obs = gym.spaces.flatdim(self.unwrapped.single_observation_space["policy"])
+            self.num_obs = gym.spaces.flatdim(
+                self.unwrapped.single_observation_space["policy"]
+            )
         # -- privileged observations
         if (
             hasattr(self.unwrapped, "observation_manager")
             and "critic" in self.unwrapped.observation_manager.group_obs_dim
         ):
-            self.num_privileged_obs = self.unwrapped.observation_manager.group_obs_dim["critic"][0]
-        elif hasattr(self.unwrapped, "num_states") and "critic" in self.unwrapped.single_observation_space:
-            self.num_privileged_obs = gym.spaces.flatdim(self.unwrapped.single_observation_space["critic"])
+            self.num_privileged_obs = self.unwrapped.observation_manager.group_obs_dim[
+                "critic"
+            ][0]
+        elif (
+            hasattr(self.unwrapped, "num_states")
+            and "critic" in self.unwrapped.single_observation_space
+        ):
+            self.num_privileged_obs = gym.spaces.flatdim(
+                self.unwrapped.single_observation_space["critic"]
+            )
         else:
             self.num_privileged_obs = 0
 
@@ -175,7 +191,9 @@ class RslRlVecEnvWrapper(VecEnv):
         # return observations
         return obs_dict["policy"], {"observations": obs_dict}
 
-    def step(self, actions: torch.Tensor, *, use_old=False, **kwargs) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+    def step(
+        self, actions: torch.Tensor, *, use_old=False, **kwargs
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         # clip actions
         if self.clip_actions is not None:
             actions = torch.clamp(actions, -self.clip_actions, self.clip_actions)

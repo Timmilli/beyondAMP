@@ -9,7 +9,9 @@ if TYPE_CHECKING:
 
 def gait_phase(env: ManagerBasedRLEnv, period: float) -> torch.Tensor:
     if not hasattr(env, "episode_length_buf"):
-        env.episode_length_buf = torch.zeros(env.num_envs, device=env.device, dtype=torch.long)
+        env.episode_length_buf = torch.zeros(
+            env.num_envs, device=env.device, dtype=torch.long
+        )
 
     global_phase = (env.episode_length_buf * env.step_dt) % period / period
 

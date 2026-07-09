@@ -5,6 +5,7 @@ from typing import List, Literal
 
 from .motion_dataset import MotionDataset, MotionDatasetCfg, configclass
 
+
 class WeightedMotionDataset(MotionDataset):
     """
     Extend MotionDataset with weighted sampling on transition pairs (t, t+1).
@@ -35,7 +36,12 @@ class WeightedMotionDataset(MotionDataset):
     def norm_weights(self):
         self.weights = self.weights / (self.weights.sum() + 1e-9)
 
-    def update_weights(self, weights: torch.Tensor, method: Literal["sum", "mean", "replace"]="sum", inplace=True):
+    def update_weights(
+        self,
+        weights: torch.Tensor,
+        method: Literal["sum", "mean", "replace"] = "sum",
+        inplace=True,
+    ):
         if method in ["sum", "mean"]:
             self.weights += weights
             self.norm_weights()
@@ -74,9 +80,9 @@ class WeightedMotionDataset(MotionDataset):
     # ---------------------------------------------------------
     # Sampling
     # ---------------------------------------------------------
-    def sample_batch(self, batch_size: int, replacement = True):
+    def sample_batch(self, batch_size: int, replacement=True):
         idx = torch.multinomial(self.weights, batch_size, replacement=replacement)
-        t   = self.index_t[idx]
+        t = self.index_t[idx]
         tp1 = self.index_tp1[idx]
         return t, tp1
 

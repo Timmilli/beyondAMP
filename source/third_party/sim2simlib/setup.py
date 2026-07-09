@@ -13,12 +13,7 @@ REPOSITORY = ""
 KEYWORDS = ["extension", "isaacLab"]
 
 # Minimum dependencies required prior to installation
-INSTALL_REQUIRES = [
-    "numpy",
-    "mujoco",
-    "torch",
-    "rich"
-]
+INSTALL_REQUIRES = ["numpy", "mujoco", "torch", "rich"]
 
 # Setup the package installation
 setup(

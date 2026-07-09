@@ -8,14 +8,28 @@ from isaaclab.app import AppLauncher
 
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Run a env.")
-parser.add_argument("--video", action="store_true", default=False, help="Record videos during training.")
-parser.add_argument("--video_length", type=int, default=200, help="Length of the recorded video (in steps).")
 parser.add_argument(
-    "--disable_fabric", action="store_true", default=False, help="Disable fabric and use USD I/O operations."
+    "--video", action="store_true", default=False, help="Record videos during training."
 )
-parser.add_argument("--num_envs", type=int, default=1, help="Number of environments to simulate.")
+parser.add_argument(
+    "--video_length",
+    type=int,
+    default=200,
+    help="Length of the recorded video (in steps).",
+)
+parser.add_argument(
+    "--disable_fabric",
+    action="store_true",
+    default=False,
+    help="Disable fabric and use USD I/O operations.",
+)
+parser.add_argument(
+    "--num_envs", type=int, default=1, help="Number of environments to simulate."
+)
 parser.add_argument("--task", type=str, default=None, help="Name of the task.")
-parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
+parser.add_argument(
+    "--seed", type=int, default=None, help="Seed used for the environment"
+)
 
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
@@ -42,6 +56,7 @@ from isaaclab.utils.io import dump_yaml
 
 import amp_tasks
 
+
 class EnvWrapper(RslRlVecEnvWrapper):
     def get_privileged_observations(self):
         return self.get_observations()
@@ -51,13 +66,18 @@ def main():
     """Play with RSL-RL agent."""
     # parse configuration
     env_cfg = parse_env_cfg(
-        args_cli.task, device=args_cli.device, num_envs=args_cli.num_envs, use_fabric=not args_cli.disable_fabric
+        args_cli.task,
+        device=args_cli.device,
+        num_envs=args_cli.num_envs,
+        use_fabric=not args_cli.disable_fabric,
     )
     dump_yaml("./test_env.yaml", env_cfg)
     # Modify view
     # env_cfg.viewer.eye = (0.0, 0.0, 50.0)
     # create isaac environment
-    env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
+    env = gym.make(
+        args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None
+    )
     # wrap for video recording
     if args_cli.video:
         video_kwargs = {
@@ -81,6 +101,7 @@ def main():
     obs, _ = env.get_observations()
     # breakpoint()
     import tqdm
+
     pbar = tqdm.tqdm(range(args_cli.video_length))
     timestep = 0
     # simulate environment
@@ -88,12 +109,14 @@ def main():
         # run everything in inference mode
         with torch.inference_mode():
             # agent stepping
-            actions = torch.zeros(env.action_space.sample().shape).to(env.unwrapped.device)
+            actions = torch.zeros(env.action_space.sample().shape).to(
+                env.unwrapped.device
+            )
             # env stepping
-            #print(actions)
+            # print(actions)
             obs, r, d, extra = env.step(actions)
             # print(extra["constraint"])
-            #breakpoint()
+            # breakpoint()
 
         if args_cli.video:
             pbar.update()

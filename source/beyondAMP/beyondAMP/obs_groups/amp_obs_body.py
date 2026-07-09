@@ -11,7 +11,7 @@ import beyondAMP.mdp as mdp
 from .amp_obs_base import AMPObsBaseCfg
 
 # Terms with only body reference motion
-    
+
 """
 Example
 ```
@@ -26,7 +26,8 @@ class G1FlatEnvSoftTrackCfg(G1FlatEnvCfg):
                 )
 ```
 """
-    
+
+
 @configclass
 class AMPObsBodySoftTrackCfg(AMPObsBaseCfg):
     joint_pos = ObsTerm(func=mdp.joint_pos_rel)
@@ -35,7 +36,15 @@ class AMPObsBodySoftTrackCfg(AMPObsBaseCfg):
     body_lin_vel_w = ObsTerm(func=mdp.body_lin_vel_w)
     body_ang_vel_w = ObsTerm(func=mdp.body_ang_vel_w)
 
-AMPObsSoftTrackTerms = ["joint_pos", "joint_vel", "body_quat_w", "body_lin_vel_w", "body_ang_vel_w"]
+
+AMPObsSoftTrackTerms = [
+    "joint_pos",
+    "joint_vel",
+    "body_quat_w",
+    "body_lin_vel_w",
+    "body_ang_vel_w",
+]
+
 
 @configclass
 class AMPObsBodyHardTrackCfg(AMPObsBaseCfg):
@@ -45,5 +54,13 @@ class AMPObsBodyHardTrackCfg(AMPObsBaseCfg):
     body_quat_w = ObsTerm(func=mdp.body_quat_w)
     body_lin_vel_w = ObsTerm(func=mdp.body_lin_vel_w)
     body_ang_vel_w = ObsTerm(func=mdp.body_ang_vel_w)
-    
-AMPObsHardTrackTerms = ["joint_pos", "joint_vel", "body_pos_w", "body_quat_w", "body_lin_vel_w", "body_ang_vel_w"]
+
+
+AMPObsHardTrackTerms = [
+    "joint_pos",
+    "joint_vel",
+    "body_pos_w",
+    "body_quat_w",
+    "body_lin_vel_w",
+    "body_ang_vel_w",
+]

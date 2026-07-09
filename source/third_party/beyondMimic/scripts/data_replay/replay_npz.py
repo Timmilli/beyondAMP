@@ -16,7 +16,9 @@ from isaaclab.app import AppLauncher
 
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Replay converted motions.")
-parser.add_argument("--registry_name", type=str, required=True, help="The name of the wand registry.")
+parser.add_argument(
+    "--registry_name", type=str, required=True, help="The name of the wand registry."
+)
 
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
@@ -47,7 +49,9 @@ from beyondMimic.mdp import MotionLoader
 class ReplayMotionsSceneCfg(InteractiveSceneCfg):
     """Configuration for a replay motions scene."""
 
-    ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg())
+    ground = AssetBaseCfg(
+        prim_path="/World/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg()
+    )
 
     sky_light = AssetBaseCfg(
         prim_path="/World/skyLight",
@@ -68,7 +72,9 @@ def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
     sim_dt = sim.get_physics_dt()
 
     registry_name = args_cli.registry_name
-    if ":" not in registry_name:  # Check if the registry name includes alias, if not, append ":latest"
+    if (
+        ":" not in registry_name
+    ):  # Check if the registry name includes alias, if not, append ":latest"
         registry_name += ":latest"
     import pathlib
 
@@ -92,13 +98,17 @@ def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
         time_steps[reset_ids] = 0
 
         root_states = robot.data.default_root_state.clone()
-        root_states[:, :3] = motion.body_pos_w[time_steps][:, 0] + scene.env_origins[:, None, :]
+        root_states[:, :3] = (
+            motion.body_pos_w[time_steps][:, 0] + scene.env_origins[:, None, :]
+        )
         root_states[:, 3:7] = motion.body_quat_w[time_steps][:, 0]
         root_states[:, 7:10] = motion.body_lin_vel_w[time_steps][:, 0]
         root_states[:, 10:] = motion.body_ang_vel_w[time_steps][:, 0]
 
         robot.write_root_state_to_sim(root_states)
-        robot.write_joint_state_to_sim(motion.joint_pos[time_steps], motion.joint_vel[time_steps])
+        robot.write_joint_state_to_sim(
+            motion.joint_pos[time_steps], motion.joint_vel[time_steps]
+        )
         scene.write_data_to_sim()
         sim.render()  # We don't want physic (sim.step())
         scene.update(sim_dt)

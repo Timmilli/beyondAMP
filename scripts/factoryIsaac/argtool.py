@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Tuple
 if TYPE_CHECKING:
     from isaaclab_rl.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlVecEnvWrapper
 
+
 def add_rsl_rl_args(parser: argparse.ArgumentParser):
     """Add RSL-RL arguments to the parser.
 
@@ -13,26 +14,49 @@ def add_rsl_rl_args(parser: argparse.ArgumentParser):
         parser: The parser to add the arguments to.
     """
     # create a new argument group
-    arg_group = parser.add_argument_group("rsl_rl", description="Arguments for RSL-RL agent.")
+    arg_group = parser.add_argument_group(
+        "rsl_rl", description="Arguments for RSL-RL agent."
+    )
     # -- experiment arguments
     arg_group.add_argument(
-        "--experiment_name", type=str, default=None, help="Name of the experiment folder where logs will be stored."
+        "--experiment_name",
+        type=str,
+        default=None,
+        help="Name of the experiment folder where logs will be stored.",
     )
-    arg_group.add_argument("--run_name", type=str, default=None, help="Run name suffix to the log directory.")
+    arg_group.add_argument(
+        "--run_name",
+        type=str,
+        default=None,
+        help="Run name suffix to the log directory.",
+    )
     # -- load arguments
-    arg_group.add_argument("--resume", action="store_true", help="Whether to resume from a checkpoint.")
+    arg_group.add_argument(
+        "--resume", action="store_true", help="Whether to resume from a checkpoint."
+    )
     # arg_group.add_argument("--load_run", type=str, default=None, help="Name of the run folder to resume from.")
-    arg_group.add_argument("--checkpoint", type=str, default=None, help="Checkpoint file to resume from.")
+    arg_group.add_argument(
+        "--checkpoint", type=str, default=None, help="Checkpoint file to resume from."
+    )
     # -- logger arguments
     arg_group.add_argument(
-        "--logger", type=str, default=None, choices={"wandb", "tensorboard", "neptune"}, help="Logger module to use."
+        "--logger",
+        type=str,
+        default=None,
+        choices={"wandb", "tensorboard", "neptune"},
+        help="Logger module to use.",
     )
     arg_group.add_argument(
-        "--log_project_name", type=str, default=None, help="Name of the logging project when using wandb or neptune."
+        "--log_project_name",
+        type=str,
+        default=None,
+        help="Name of the logging project when using wandb or neptune.",
     )
 
 
-def parse_rsl_rl_cfg(task_name: str, args_cli: argparse.Namespace, rsl_rl_cfg=None) -> RslRlOnPolicyRunnerCfg:
+def parse_rsl_rl_cfg(
+    task_name: str, args_cli: argparse.Namespace, rsl_rl_cfg=None
+) -> RslRlOnPolicyRunnerCfg:
     """Parse configuration for RSL-RL agent based on inputs.
 
     Args:
@@ -68,10 +92,12 @@ def parse_rsl_rl_cfg(task_name: str, args_cli: argparse.Namespace, rsl_rl_cfg=No
 
     return rsl_rl_cfg
 
+
 import yaml
 import os
 from datetime import datetime
 import pickle
+
 
 def update_object_from_dict(obj, data):
     for key, value in data.items():
@@ -85,20 +111,26 @@ def update_object_from_dict(obj, data):
             print(f"Warning: Object has no attribute '{key}'")
     return obj
 
-def update_object_from_yaml(obj, file_path:str):
-    with open(file_path, 'r') as file:
+
+def update_object_from_yaml(obj, file_path: str):
+    with open(file_path, "r") as file:
         data = yaml.safe_load(file)
         obj = update_object_from_dict(obj, data)
     return obj
+
 
 def make_cfgs(args_cli, parse_env_cfg, runner_cfg=None):
     """Train with RSL-RL agent."""
 
     task_name = args_cli.task
 
-    env_cfg = parse_env_cfg(task_name, device=args_cli.device, num_envs=args_cli.num_envs)
+    env_cfg = parse_env_cfg(
+        task_name, device=args_cli.device, num_envs=args_cli.num_envs
+    )
 
-    agent_cfg: RslRlOnPolicyRunnerCfg = parse_rsl_rl_cfg(task_name, args_cli, runner_cfg)
+    agent_cfg: RslRlOnPolicyRunnerCfg = parse_rsl_rl_cfg(
+        task_name, args_cli, runner_cfg
+    )
 
     # specify directory for logging experiments
     log_root_path = os.path.join("logs", "rsl_rl", agent_cfg.experiment_name)
@@ -112,6 +144,7 @@ def make_cfgs(args_cli, parse_env_cfg, runner_cfg=None):
     agent_cfg.seed = args_cli.seed
 
     return task_name, env_cfg, agent_cfg, log_dir
+
 
 def load_cfgs(args_cli, modified=False):
     """
@@ -131,7 +164,10 @@ def load_cfgs(args_cli, modified=False):
 
     with open(os.path.join(task_dir, "params", "agent.pkl"), "rb") as f:
         agent_cfg: RslRlOnPolicyRunnerCfg = pickle.load(f)
-        if modified: agent_cfg = update_object_from_yaml(agent_cfg, os.path.join(task_dir, "params", "agent.yaml"))
+        if modified:
+            agent_cfg = update_object_from_yaml(
+                agent_cfg, os.path.join(task_dir, "params", "agent.yaml")
+            )
 
     log_dir = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     if agent_cfg.run_name:
@@ -141,22 +177,25 @@ def load_cfgs(args_cli, modified=False):
     return task_name, env_cfg, agent_cfg, log_dir
 
 
-def prepare_wrapper(env, args_cli, agent_cfg) -> Tuple[RslRlVecEnvWrapper, callable, dict]:
+def prepare_wrapper(
+    env, args_cli, agent_cfg
+) -> Tuple[RslRlVecEnvWrapper, callable, dict]:
     print("Using main branch.")
     from beyondAMP.isaaclab.rsl_rl import AMPEnvWrapper
 
     env = AMPEnvWrapper(env, motion_dataset=getattr(agent_cfg, "amp_data", None))
     learn_cfg = {
         "num_learning_iterations": agent_cfg.max_iterations,
-        "init_at_random_ep_len": True
+        "init_at_random_ep_len": True,
     }
-    
+
     if hasattr(agent_cfg, "runner_type"):
         func_runner = agent_cfg.runner_type
         if not callable(func_runner):
             func_runner = eval(func_runner)
     else:
         from rsl_rl_amp.runners import OnPolicyRunner
+
         func_runner = OnPolicyRunner
 
     return env, func_runner, learn_cfg
@@ -164,5 +203,4 @@ def prepare_wrapper(env, args_cli, agent_cfg) -> Tuple[RslRlVecEnvWrapper, calla
 
 def dump_pickle(fpath, obj):
     with open(fpath, "wb") as f:
-        pickle.dump(obj, f)        
-
+        pickle.dump(obj, f)

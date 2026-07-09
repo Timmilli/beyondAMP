@@ -39,6 +39,7 @@ modules = [
     "./source/third_party/sim2simlib",
 ]
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Create symbolic links for local repos under IsaacLab."

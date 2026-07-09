@@ -18,7 +18,10 @@ def lin_vel_cmd_levels(
     limit_ranges = command_term.cfg.limit_ranges
 
     reward_term = env.reward_manager.get_term_cfg(reward_term_name)
-    reward = torch.mean(env.reward_manager._episode_sums[reward_term_name][env_ids]) / env.max_episode_length_s
+    reward = (
+        torch.mean(env.reward_manager._episode_sums[reward_term_name][env_ids])
+        / env.max_episode_length_s
+    )
 
     if env.common_step_counter % env.max_episode_length == 0:
         if reward > reward_term.weight * 0.8:
@@ -47,7 +50,10 @@ def ang_vel_cmd_levels(
     limit_ranges = command_term.cfg.limit_ranges
 
     reward_term = env.reward_manager.get_term_cfg(reward_term_name)
-    reward = torch.mean(env.reward_manager._episode_sums[reward_term_name][env_ids]) / env.max_episode_length_s
+    reward = (
+        torch.mean(env.reward_manager._episode_sums[reward_term_name][env_ids])
+        / env.max_episode_length_s
+    )
 
     if env.common_step_counter % env.max_episode_length == 0:
         if reward > reward_term.weight * 0.8:

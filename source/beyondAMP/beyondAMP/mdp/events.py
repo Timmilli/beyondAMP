@@ -11,8 +11,8 @@ from beyondAMP.motion.motion_dataset import MotionDataset
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedEnv, ManagerBasedRLEnv
-    
-    
+
+
 def reset_root_state_uniform(
     env: ManagerBasedEnv,
     env_ids: torch.Tensor,
@@ -39,23 +39,40 @@ def reset_root_state_uniform(
     root_states = asset.data.default_root_state[env_ids].clone()
 
     # poses
-    range_list = [pose_range.get(key, (0.0, 0.0)) for key in ["x", "y", "z", "roll", "pitch", "yaw"]]
+    range_list = [
+        pose_range.get(key, (0.0, 0.0))
+        for key in ["x", "y", "z", "roll", "pitch", "yaw"]
+    ]
     ranges = torch.tensor(range_list, device=asset.device)
-    rand_samples = math_utils.sample_uniform(ranges[:, 0], ranges[:, 1], (len(env_ids), 6), device=asset.device)
+    rand_samples = math_utils.sample_uniform(
+        ranges[:, 0], ranges[:, 1], (len(env_ids), 6), device=asset.device
+    )
 
-    positions = root_states[:, 0:3] + env.scene.env_origins[env_ids] + rand_samples[:, 0:3]
-    orientations_delta = math_utils.quat_from_euler_xyz(rand_samples[:, 3], rand_samples[:, 4], rand_samples[:, 5])
+    positions = (
+        root_states[:, 0:3] + env.scene.env_origins[env_ids] + rand_samples[:, 0:3]
+    )
+    orientations_delta = math_utils.quat_from_euler_xyz(
+        rand_samples[:, 3], rand_samples[:, 4], rand_samples[:, 5]
+    )
     orientations = math_utils.quat_mul(root_states[:, 3:7], orientations_delta)
     # velocities
-    range_list = [velocity_range.get(key, (0.0, 0.0)) for key in ["x", "y", "z", "roll", "pitch", "yaw"]]
+    range_list = [
+        velocity_range.get(key, (0.0, 0.0))
+        for key in ["x", "y", "z", "roll", "pitch", "yaw"]
+    ]
     ranges = torch.tensor(range_list, device=asset.device)
-    rand_samples = math_utils.sample_uniform(ranges[:, 0], ranges[:, 1], (len(env_ids), 6), device=asset.device)
+    rand_samples = math_utils.sample_uniform(
+        ranges[:, 0], ranges[:, 1], (len(env_ids), 6), device=asset.device
+    )
 
     velocities = root_states[:, 7:13] + rand_samples
 
     # set into the physics simulation
-    asset.write_root_pose_to_sim(torch.cat([positions, orientations], dim=-1), env_ids=env_ids)
+    asset.write_root_pose_to_sim(
+        torch.cat([positions, orientations], dim=-1), env_ids=env_ids
+    )
     asset.write_root_velocity_to_sim(velocities, env_ids=env_ids)
+
 
 def reset_joints_by_offset(
     env: ManagerBasedEnv,
@@ -77,8 +94,12 @@ def reset_joints_by_offset(
     joint_vel = asset.data.default_joint_vel[env_ids, asset_cfg.joint_ids].clone()
 
     # bias these values randomly
-    joint_pos += math_utils.sample_uniform(*position_range, joint_pos.shape, joint_pos.device)
-    joint_vel += math_utils.sample_uniform(*velocity_range, joint_vel.shape, joint_vel.device)
+    joint_pos += math_utils.sample_uniform(
+        *position_range, joint_pos.shape, joint_pos.device
+    )
+    joint_vel += math_utils.sample_uniform(
+        *velocity_range, joint_vel.shape, joint_vel.device
+    )
 
     # clamp joint pos to limits
     joint_pos_limits = asset.data.soft_joint_pos_limits[env_ids, asset_cfg.joint_ids]
@@ -101,8 +122,8 @@ def reset_to_ref_motion_dataset(
     env_ids: torch.Tensor,
     pose_range: dict[str, tuple[float, float]],
     velocity_range: dict[str, tuple[float, float]],
-    joint_position_range: tuple[float, float],   # OFFSET noise, not scale
-    joint_velocity_range: tuple[float, float],   # OFFSET noise
+    joint_position_range: tuple[float, float],  # OFFSET noise, not scale
+    joint_velocity_range: tuple[float, float],  # OFFSET noise
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ):
     """
@@ -117,7 +138,9 @@ def reset_to_ref_motion_dataset(
     # ---------------------------------------------------------
     if getattr(env, "motion_dataset", None) is None:
         reset_root_state_uniform(env, env_ids, pose_range, velocity_range, asset_cfg)
-        reset_joints_by_offset(env, env_ids, joint_position_range, joint_velocity_range, asset_cfg)
+        reset_joints_by_offset(
+            env, env_ids, joint_position_range, joint_velocity_range, asset_cfg
+        )
         return
 
     # ---------------------------------------------------------
@@ -128,10 +151,10 @@ def reset_to_ref_motion_dataset(
 
     ids, _ = motion_dataset.sample_batch(batch_size)
 
-    joint_pos = motion_dataset.joint_pos[ids].clone()      # [B, J]
-    joint_vel = motion_dataset.joint_vel[ids].clone()      # [B, J]
-    anchor_pos = motion_dataset.anchor_pos_w[ids]          # [B, 3]
-    anchor_quat = motion_dataset.anchor_quat_w[ids]        # [B, 4]
+    joint_pos = motion_dataset.joint_pos[ids].clone()  # [B, J]
+    joint_vel = motion_dataset.joint_vel[ids].clone()  # [B, J]
+    anchor_pos = motion_dataset.anchor_pos_w[ids]  # [B, 3]
+    anchor_quat = motion_dataset.anchor_quat_w[ids]  # [B, 4]
     anchor_lin_vel = motion_dataset.anchor_lin_vel_w[ids]  # [B, 3]
     anchor_ang_vel = motion_dataset.anchor_ang_vel_w[ids]  # [B, 3]
 
@@ -142,14 +165,20 @@ def reset_to_ref_motion_dataset(
     # Root pose noise
     # ---------------------------------------------------------
     pose_keys = ["x", "y", "z", "roll", "pitch", "yaw"]
-    pose_ranges = torch.tensor([pose_range.get(k, (0.0, 0.0)) for k in pose_keys], device=device)
+    pose_ranges = torch.tensor(
+        [pose_range.get(k, (0.0, 0.0)) for k in pose_keys], device=device
+    )
     pose_noise = math_utils.sample_uniform(
         pose_ranges[:, 0], pose_ranges[:, 1], (batch_size, 6), device
     )
 
     positions = anchor_pos + env.scene.env_origins[env_ids] + pose_noise[:, :3]
 
-    roll_noise, pitch_noise, yaw_noise = pose_noise[:, 3], pose_noise[:, 4], pose_noise[:, 5]
+    roll_noise, pitch_noise, yaw_noise = (
+        pose_noise[:, 3],
+        pose_noise[:, 4],
+        pose_noise[:, 5],
+    )
     rot_noise = math_utils.quat_from_euler_xyz(roll_noise, pitch_noise, yaw_noise)
     orientations = math_utils.quat_mul(rot_noise, anchor_quat)
 
@@ -157,7 +186,9 @@ def reset_to_ref_motion_dataset(
     # Root velocity noise
     # ---------------------------------------------------------
     vel_keys = ["vx", "vy", "vz", "wx", "wy", "wz"]
-    vel_ranges = torch.tensor([velocity_range.get(k, (0.0, 0.0)) for k in vel_keys], device=device)
+    vel_ranges = torch.tensor(
+        [velocity_range.get(k, (0.0, 0.0)) for k in vel_keys], device=device
+    )
     vel_noise = math_utils.sample_uniform(
         vel_ranges[:, 0], vel_ranges[:, 1], (batch_size, 6), device
     )
@@ -212,6 +243,7 @@ def reset_to_ref_motion_dataset(
         joint_ids=asset_cfg.joint_ids,
     )
 
+
 def randomize_rigid_body_com(
     env: ManagerBasedEnv,
     env_ids: torch.Tensor | None,
@@ -241,7 +273,9 @@ def randomize_rigid_body_com(
     # sample random CoM values
     range_list = [com_range.get(key, (0.0, 0.0)) for key in ["x", "y", "z"]]
     ranges = torch.tensor(range_list, device="cpu")
-    rand_samples = math_utils.sample_uniform(ranges[:, 0], ranges[:, 1], (len(env_ids), 3), device="cpu").unsqueeze(1)
+    rand_samples = math_utils.sample_uniform(
+        ranges[:, 0], ranges[:, 1], (len(env_ids), 3), device="cpu"
+    ).unsqueeze(1)
 
     # get the current com of the bodies (num_assets, num_bodies)
     coms = asset.root_physx_view.get_coms().clone()

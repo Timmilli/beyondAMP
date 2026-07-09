@@ -12,41 +12,43 @@ if TYPE_CHECKING:
 
 
 def body_pos_w(
-    env:ManagerBasedRLEnv, 
-    asset_cfg:SceneEntityCfg=SceneEntityCfg("robot")
+    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
-    body_pos_w = asset.data.body_pos_w[:, asset_cfg.body_ids] - env.scene.env_origins.unsqueeze(1)
+    body_pos_w = asset.data.body_pos_w[
+        :, asset_cfg.body_ids
+    ] - env.scene.env_origins.unsqueeze(1)
     return body_pos_w.reshape(env.num_envs, -1)
 
+
 def body_quat_w(
-    env:ManagerBasedRLEnv, 
-    asset_cfg:SceneEntityCfg=SceneEntityCfg("robot")
+    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
     body_quat = asset.data.body_quat_w[:, asset_cfg.body_ids]
     return body_quat.reshape(env.num_envs, -1)
-    
+
+
 def body_lin_vel_w(
-    env:ManagerBasedRLEnv, 
-    asset_cfg:SceneEntityCfg=SceneEntityCfg("robot")
+    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
     body_lin_vel_w = asset.data.body_lin_vel_w[:, asset_cfg.body_ids]
     return body_lin_vel_w.reshape(env.num_envs, -1)
 
+
 def body_ang_vel_w(
-    env:ManagerBasedRLEnv, 
-    asset_cfg:SceneEntityCfg=SceneEntityCfg("robot")
+    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
     body_ang_vel_w = asset.data.body_ang_vel_w[:, asset_cfg.body_ids]
     return body_ang_vel_w.reshape(env.num_envs, -1)
 
+
 anchor_pos_w = body_pos_w
 anchor_quat_w = body_quat_w
 anchor_lin_vel_w = body_lin_vel_w
-anchor_ang_vel_w  = body_ang_vel_w
+anchor_ang_vel_w = body_ang_vel_w
 
 
 def base_lin_vel_yaw(
@@ -54,10 +56,10 @@ def base_lin_vel_yaw(
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> torch.Tensor:
     """Base linear velocity in yaw-only frame (ignores pitch/roll).
-    
+
     Suitable for crawling robots where body is tilted but velocity should
     be measured relative to the horizontal facing direction.
-    
+
     Returns:
         Linear velocity [vx, vy, vz] in yaw-only frame.
     """
@@ -76,10 +78,10 @@ def base_ang_vel_yaw(
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> torch.Tensor:
     """Base angular velocity in yaw-only frame (ignores pitch/roll).
-    
+
     Suitable for crawling robots where body is tilted but angular velocity
     should be measured relative to the horizontal facing direction.
-    
+
     Returns:
         Angular velocity [wx, wy, wz] in yaw-only frame.
     """

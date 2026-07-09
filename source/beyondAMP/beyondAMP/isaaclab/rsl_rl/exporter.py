@@ -8,7 +8,9 @@ import os
 import torch
 
 
-def export_policy_as_jit(policy: object, normalizer: object | None, path: str, filename="policy.pt"):
+def export_policy_as_jit(
+    policy: object, normalizer: object | None, path: str, filename="policy.pt"
+):
     """Export policy into a Torch JIT file.
 
     Args:
@@ -22,7 +24,11 @@ def export_policy_as_jit(policy: object, normalizer: object | None, path: str, f
 
 
 def export_policy_as_onnx(
-    policy: object, path: str, normalizer: object | None = None, filename="policy.onnx", verbose=False
+    policy: object,
+    path: str,
+    normalizer: object | None = None,
+    filename="policy.onnx",
+    verbose=False,
 ):
     """Export policy into a Torch ONNX file.
 
@@ -65,9 +71,15 @@ class _TorchPolicyExporter(torch.nn.Module):
         if self.is_recurrent:
             self.rnn.cpu()
             self.rnn_type = type(self.rnn).__name__.lower()  # 'lstm' or 'gru'
-            self.register_buffer("hidden_state", torch.zeros(self.rnn.num_layers, 1, self.rnn.hidden_size))
+            self.register_buffer(
+                "hidden_state",
+                torch.zeros(self.rnn.num_layers, 1, self.rnn.hidden_size),
+            )
             if self.rnn_type == "lstm":
-                self.register_buffer("cell_state", torch.zeros(self.rnn.num_layers, 1, self.rnn.hidden_size))
+                self.register_buffer(
+                    "cell_state",
+                    torch.zeros(self.rnn.num_layers, 1, self.rnn.hidden_size),
+                )
                 self.forward = self.forward_lstm
                 self.reset = self.reset_memory
             elif self.rnn_type == "gru":

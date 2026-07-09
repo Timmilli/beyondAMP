@@ -27,6 +27,7 @@ class G1FlatEnvSoftTrackCfg(G1FlatEnvCfg):
 ```
 """
 
+
 @configclass
 class AMPObsAnchorHardTrackCfg(AMPObsBaseCfg):
     joint_pos = ObsTerm(func=mdp.joint_pos_rel)
@@ -35,6 +36,13 @@ class AMPObsAnchorHardTrackCfg(AMPObsBaseCfg):
     anchor_quat_w = ObsTerm(func=mdp.anchor_quat_w)
     anchor_lin_vel_w = ObsTerm(func=mdp.anchor_lin_vel_w)
     anchor_ang_vel_w = ObsTerm(func=mdp.anchor_ang_vel_w)
-    
-AMPObsAnchorHardTrackTerms = \
-    ["joint_pos", "joint_vel", "anchor_pos_w", "anchor_quat_w", "anchor_lin_vel_w", "anchor_ang_vel_w"]
+
+
+AMPObsAnchorHardTrackTerms = [
+    "joint_pos",
+    "joint_vel",
+    "anchor_pos_w",
+    "anchor_quat_w",
+    "anchor_lin_vel_w",
+    "anchor_ang_vel_w",
+]

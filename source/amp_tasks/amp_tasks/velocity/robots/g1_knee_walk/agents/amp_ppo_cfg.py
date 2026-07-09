@@ -1,10 +1,24 @@
 from isaaclab.utils import configclass
-from beyondAMP.isaaclab.rsl_rl.configs.rl_cfg import RslRlOnPolicyRunnerCfg, RslRlPpoActorCriticCfg, RslRlPpoAlgorithmCfg
-from beyondAMP.isaaclab.rsl_rl.configs.amp_cfg import \
-    MotionDatasetCfg, AMPObsBaiscCfg, AMPPPOAlgorithmCfg, AMPRunnerCfg, AMPPPOWeightedAlgorithmCfg
-from beyondAMP.obs_groups import AMPObsBaiscTerms, AMPObsSoftTrackTerms, AMPObsHardTrackTerms
+from beyondAMP.isaaclab.rsl_rl.configs.rl_cfg import (
+    RslRlOnPolicyRunnerCfg,
+    RslRlPpoActorCriticCfg,
+    RslRlPpoAlgorithmCfg,
+)
+from beyondAMP.isaaclab.rsl_rl.configs.amp_cfg import (
+    MotionDatasetCfg,
+    AMPObsBaiscCfg,
+    AMPPPOAlgorithmCfg,
+    AMPRunnerCfg,
+    AMPPPOWeightedAlgorithmCfg,
+)
+from beyondAMP.obs_groups import (
+    AMPObsBaiscTerms,
+    AMPObsSoftTrackTerms,
+    AMPObsHardTrackTerms,
+)
 
 from . import general
+
 
 @configclass
 class G1FlatAMPRunnerCfg(AMPRunnerCfg):
@@ -37,9 +51,9 @@ class G1FlatAMPRunnerCfg(AMPRunnerCfg):
     )
     amp_data = MotionDatasetCfg(
         motion_files=general.amp_data_file,
-        body_names = general.g1_key_body_names,
-        anchor_name = general.g1_anchor_name,
-        amp_obs_terms = AMPObsBaiscTerms,
+        body_names=general.g1_key_body_names,
+        anchor_name=general.g1_anchor_name,
+        amp_obs_terms=AMPObsBaiscTerms,
     )
     amp_discr_hidden_dims = [256, 256]
     amp_reward_coef = 1.0

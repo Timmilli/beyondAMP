@@ -32,13 +32,16 @@ class AMPPPOWeighted(AMPPPO):
         providing update_weights(new_weights: Tensor).
       • Discriminator takes concatenated (state, next_state).
     """
+
     amp_data: WeightedMotionDataset
+
     def __init__(
-            self, *args, 
-            weight_update_coef: float = 1.0, 
-            rescore_interval: int = None,
-            **kwargs
-        ):
+        self,
+        *args,
+        weight_update_coef: float = 1.0,
+        rescore_interval: int = None,
+        **kwargs,
+    ):
         """
         Args:
             weight_update_coef (float):
@@ -51,7 +54,7 @@ class AMPPPOWeighted(AMPPPO):
         self.rescore_interval = rescore_interval
         self.rescore_size = None
         # TODO alow not full dataset update
-        
+
         self.rescore_ptr = 0
 
     # ------------------------------------------------------------------
@@ -68,13 +71,16 @@ class AMPPPOWeighted(AMPPPO):
             t, tp1 = self.amp_data.index_t, self.amp_data.index_tp1
         else:
             t, tp1 = self.amp_data.sample_batch(self.rescore_size, replacement=False)
-        expert_state, expert_next_state = \
-            self.amp_data.build_transition(t, tp1)
+        expert_state, expert_next_state = self.amp_data.build_transition(t, tp1)
 
         # Optional normalization
         if self.amp_normalizer is not None:
-            expert_state = self.amp_normalizer.normalize_torch(expert_state, self.device)
-            expert_next_state = self.amp_normalizer.normalize_torch(expert_next_state, self.device)
+            expert_state = self.amp_normalizer.normalize_torch(
+                expert_state, self.device
+            )
+            expert_next_state = self.amp_normalizer.normalize_torch(
+                expert_next_state, self.device
+            )
 
         # Concatenate inputs for discriminator
         inp = torch.cat([expert_state, expert_next_state], dim=-1)  # (B, D_s+D_s)

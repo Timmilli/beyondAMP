@@ -1,5 +1,6 @@
 import torch
 
+
 @torch.jit.script
 def quat_apply_inverse(quat: torch.Tensor, vec: torch.Tensor) -> torch.Tensor:
     """Apply an inverse quaternion rotation to a vector.

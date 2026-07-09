@@ -10,14 +10,14 @@ from mjlab.envs.mdp import *  # noqa: F401,F403
 from mjlab.tasks.velocity.mdp import *  # noqa: F401,F403
 
 from .observations import (  # noqa: F401
-  anchor_ang_vel_w,
-  anchor_lin_vel_w,
-  anchor_pos_w,
-  anchor_quat_w,
-  base_ang_vel_yaw,
-  base_lin_vel_yaw,
-  body_ang_vel_w,
-  body_lin_vel_w,
-  body_pos_w,
-  body_quat_w,
+    anchor_ang_vel_w,
+    anchor_lin_vel_w,
+    anchor_pos_w,
+    anchor_quat_w,
+    base_ang_vel_yaw,
+    base_lin_vel_yaw,
+    body_ang_vel_w,
+    body_lin_vel_w,
+    body_pos_w,
+    body_quat_w,
 )

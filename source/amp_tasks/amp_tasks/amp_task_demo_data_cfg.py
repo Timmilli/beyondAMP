@@ -1,4 +1,3 @@
-
 file_punch = "data/demo/punch/punch.npz"
 
 file_soccer_shoot = "data/datasets/MocapG1Full/shoot.npz"

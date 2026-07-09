@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: Copyright (c) 2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
@@ -36,9 +36,9 @@ _EPS = np.finfo(float).eps * 4.0
 
 
 def split_and_pad_trajectories(tensor, dones):
-    """ Splits trajectories at done indices. Then concatenates them and padds with zeros up to the length og the longest trajectory.
+    """Splits trajectories at done indices. Then concatenates them and padds with zeros up to the length og the longest trajectory.
     Returns masks corresponding to valid parts of the trajectories
-    Example: 
+    Example:
         Input: [ [a1, a2, a3, a4 | a5, a6],
                  [b1, b2 | b3, b4, b5 | b6]
                 ]
@@ -48,8 +48,8 @@ def split_and_pad_trajectories(tensor, dones):
                  [b1, b2, 0, 0],   |    [True, True, False, False],
                  [b3, b4, b5, 0],  |    [True, True, True, False],
                  [b6, 0, 0, 0]     |    [True, False, False, False],
-                ]                  | ]    
-            
+                ]                  | ]
+
     Assumes that the inputy has the following dimension order: [time, number of envs, aditional dimensions]
     """
     dones = dones.clone()
@@ -58,22 +58,31 @@ def split_and_pad_trajectories(tensor, dones):
     flat_dones = dones.transpose(1, 0).reshape(-1, 1)
 
     # Get length of trajectory by counting the number of successive not done elements
-    done_indices = torch.cat((flat_dones.new_tensor([-1], dtype=torch.int64), flat_dones.nonzero()[:, 0]))
+    done_indices = torch.cat(
+        (flat_dones.new_tensor([-1], dtype=torch.int64), flat_dones.nonzero()[:, 0])
+    )
     trajectory_lengths = done_indices[1:] - done_indices[:-1]
     trajectory_lengths_list = trajectory_lengths.tolist()
     # Extract the individual trajectories
-    trajectories = torch.split(tensor.transpose(1, 0).flatten(0, 1),trajectory_lengths_list)
+    trajectories = torch.split(
+        tensor.transpose(1, 0).flatten(0, 1), trajectory_lengths_list
+    )
     padded_trajectories = torch.nn.utils.rnn.pad_sequence(trajectories)
 
-
-    trajectory_masks = trajectory_lengths > torch.arange(0, tensor.shape[0], device=tensor.device).unsqueeze(1)
+    trajectory_masks = trajectory_lengths > torch.arange(
+        0, tensor.shape[0], device=tensor.device
+    ).unsqueeze(1)
     return padded_trajectories, trajectory_masks
 
+
 def unpad_trajectories(trajectories, masks):
-    """ Does the inverse operation of  split_and_pad_trajectories()
-    """
+    """Does the inverse operation of  split_and_pad_trajectories()"""
     # Need to transpose before and after the masking to have proper reshaping
-    return trajectories.transpose(1, 0)[masks.transpose(1, 0)].view(-1, trajectories.shape[0], trajectories.shape[-1]).transpose(1, 0)
+    return (
+        trajectories.transpose(1, 0)[masks.transpose(1, 0)]
+        .view(-1, trajectories.shape[0], trajectories.shape[-1])
+        .transpose(1, 0)
+    )
 
 
 class RunningMeanStd(object):
@@ -94,14 +103,20 @@ class RunningMeanStd(object):
         batch_count = arr.shape[0]
         self.update_from_moments(batch_mean, batch_var, batch_count)
 
-    def update_from_moments(self, batch_mean: np.ndarray, batch_var: np.ndarray, batch_count: int) -> None:
+    def update_from_moments(
+        self, batch_mean: np.ndarray, batch_var: np.ndarray, batch_count: int
+    ) -> None:
         delta = batch_mean - self.mean
         tot_count = self.count + batch_count
 
         new_mean = self.mean + delta * batch_count / tot_count
         m_a = self.var * self.count
         m_b = batch_var * batch_count
-        m_2 = m_a + m_b + np.square(delta) * self.count * batch_count / (self.count + batch_count)
+        m_2 = (
+            m_a
+            + m_b
+            + np.square(delta) * self.count * batch_count / (self.count + batch_count)
+        )
         new_var = m_2 / (self.count + batch_count)
 
         new_count = batch_count + self.count
@@ -120,25 +135,33 @@ class Normalizer(RunningMeanStd):
     def normalize(self, input):
         return np.clip(
             (input - self.mean) / np.sqrt(self.var + self.epsilon),
-            -self.clip_obs, self.clip_obs)
+            -self.clip_obs,
+            self.clip_obs,
+        )
 
     def normalize_torch(self, input, device):
-        mean_torch = torch.tensor(
-            self.mean, device=device, dtype=torch.float32)
-        std_torch = torch.sqrt(torch.tensor(
-            self.var + self.epsilon, device=device, dtype=torch.float32))
+        mean_torch = torch.tensor(self.mean, device=device, dtype=torch.float32)
+        std_torch = torch.sqrt(
+            torch.tensor(self.var + self.epsilon, device=device, dtype=torch.float32)
+        )
         return torch.clamp(
-            (input - mean_torch) / std_torch, -self.clip_obs, self.clip_obs)
+            (input - mean_torch) / std_torch, -self.clip_obs, self.clip_obs
+        )
 
     def update_normalizer(self, rollouts, expert_loader):
         policy_data_generator = rollouts.feed_forward_generator_amp(
-            None, mini_batch_size=expert_loader.batch_size)
+            None, mini_batch_size=expert_loader.batch_size
+        )
         expert_data_generator = expert_loader.dataset.feed_forward_generator_amp(
-                expert_loader.batch_size)
+            expert_loader.batch_size
+        )
 
-        for expert_batch, policy_batch in zip(expert_data_generator, policy_data_generator):
+        for expert_batch, policy_batch in zip(
+            expert_data_generator, policy_data_generator
+        ):
             self.update(
-                torch.vstack(tuple(policy_batch) + tuple(expert_batch)).cpu().numpy())
+                torch.vstack(tuple(policy_batch) + tuple(expert_batch)).cpu().numpy()
+            )
 
 
 class Normalize(torch.nn.Module):

@@ -4,6 +4,7 @@ from robotlib.beyondMimic.robots.g1 import G1_ACTION_SCALE, G1_CYLINDER_CFG
 from ...tracking_env_cfg import TrackingEnvCfg
 from amp_tasks.amp_task_demo_data_cfg import file_soccer_shoot, file_punch
 
+
 @configclass
 class G1FlatEnvCfg(TrackingEnvCfg):
     def __post_init__(self):
@@ -32,13 +33,15 @@ class G1FlatEnvCfg(TrackingEnvCfg):
         self.commands.motion.debug_vis = False
         self.commands.motion.motion_file = file_punch
 
+
 @configclass
 class G1FlatNoRelaEnvCfg(G1FlatEnvCfg):
     def __post_init__(self):
         super().__post_init__()
         self.observations.policy.motion_anchor_pos_b = None
-        self.observations.policy.motion_anchor_ori_b = None # using gravity instead
+        self.observations.policy.motion_anchor_ori_b = None  # using gravity instead
         self.observations.policy.base_lin_vel = None
+
 
 @configclass
 class G1FlatWoStateEstimationEnvCfg(G1FlatEnvCfg):
@@ -47,4 +50,3 @@ class G1FlatWoStateEstimationEnvCfg(G1FlatEnvCfg):
         self.observations.policy.projected_gravity = None
         self.observations.policy.motion_anchor_pos_b = None
         self.observations.policy.base_lin_vel = None
-        
