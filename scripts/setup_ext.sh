@@ -27,7 +27,7 @@ install_modules() {
     for module in "${modules[@]}"; do
         if [ -d "$module" ]; then
             echo "→ Installing $module ..."
-            pip install -e "$module"
+            uv pip install -e "$module"
         else
             echo "⚠ Skipped $module (directory not found)"
         fi

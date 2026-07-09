@@ -13,4 +13,4 @@ uv run python scripts/factoryMjlab/train.py \
 
 Tasks are looked up via `mjlab.tasks.registry`. The AMP variants are
 registered by `amp_tasks_mjlab`, so make sure that package is installed
-(`pip install -e source/amp_tasks_mjlab`).
+(`uv pip install -e source/amp_tasks_mjlab`).
