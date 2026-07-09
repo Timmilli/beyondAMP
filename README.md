@@ -99,7 +99,7 @@ uv pip install -e source/amp_tasks_mjlab   # registers Mjlab-AMP-* tasks
 ```bash
 uv run python scripts/factoryMjlab/train.py \
     Mjlab-AMP-Velocity-Flat-Unitree-G1 \
-    --agent.amp-data.motion-files data/demo/punch/punch.npz \
+    --agent.amp-data.motion-files '["data/demo/punch/punch.npz"]' \
     --env.scene.num_envs 4096 \
     --agent.max-iterations 10000
 ```
