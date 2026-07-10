@@ -1,49 +1,72 @@
 from __future__ import annotations
 
+from rsl_rl.storage import RolloutStorage
+from tensordict import TensorDict
+
+
+from beyondAMP.motion.motion_dataset import MotionDataset
+from rsl_rl.algorithms.ppo import PPO
+from rsl_rl.models import MLPModel
+from rsl_rl_amp.storage.replay_buffer import ReplayBuffer
+from rsl_rl_amp.modules.amp_discriminator import AMPDiscriminator
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from rsl_rl_amp.modules import ActorCritic
-from rsl_rl_amp.storage import RolloutStorage
-from rsl_rl_amp.storage.replay_buffer import ReplayBuffer
-from rsl_rl_amp.modules.amp_discriminator import AMPDiscriminator
-from beyondAMP.motion.motion_dataset import MotionDataset
 
-
-class AMPPPO:
-    actor_critic: ActorCritic
-
+class AMPPPO(PPO):
     def __init__(
         self,
-        actor_critic,
+        actor: MLPModel,
+        critic: MLPModel,
+        storage: RolloutStorage,
         discriminator,
         amp_data,
         amp_normalizer,
-        num_learning_epochs=1,
-        num_mini_batches=1,
-        clip_param=0.2,
-        gamma=0.998,
-        lam=0.95,
-        value_loss_coef=1.0,
-        entropy_coef=0.0,
-        learning_rate=1e-3,
-        max_grad_norm=1.0,
-        use_clipped_value_loss=True,
-        schedule="fixed",
-        desired_kl=0.01,
-        device="cpu",
-        amp_replay_buffer_size=100000,
+        amp_replay_buffer_size: float = 100000,
         min_std=None,
-        **kwargs,
+        num_learning_epochs: int = 5,
+        num_mini_batches: int = 4,
+        clip_param: float = 0.2,
+        gamma: float = 0.998,
+        lam: float = 0.95,
+        value_loss_coef: float = 1.0,
+        entropy_coef: float = 0.0,
+        learning_rate: float = 1e-3,
+        max_grad_norm: float = 1.0,
+        optimizer: str = "adam",
+        use_clipped_value_loss: bool = True,
+        schedule: str = "fixed",
+        desired_kl: float = 0.01,
+        normalize_advantage_per_mini_batch: bool = False,
+        device="cpu",
+        rnd_cfg: dict | None = None,
+        symmetry_cfg: dict | None = None,
+        multi_gpu_cfg: dict | None = None,
     ):
-
-        self.device = device
-
-        self.desired_kl = desired_kl
-        self.schedule = schedule
-        self.learning_rate = learning_rate
-        self.min_std = min_std
+        super().__init__(
+            actor=actor,
+            critic=critic,
+            storage=storage,
+            num_learning_epochs=num_learning_epochs,
+            num_mini_batches=num_mini_batches,
+            clip_param=clip_param,
+            gamma=gamma,
+            lam=lam,
+            value_loss_coef=value_loss_coef,
+            entropy_coef=entropy_coef,
+            learning_rate=learning_rate,
+            max_grad_norm=max_grad_norm,
+            optimizer=optimizer,
+            use_clipped_value_loss=use_clipped_value_loss,
+            schedule=schedule,
+            desired_kl=desired_kl,
+            normalize_advantage_per_mini_batch=normalize_advantage_per_mini_batch,
+            device=device,
+            rnd_cfg=rnd_cfg,
+            symmetry_cfg=symmetry_cfg,
+            multi_gpu_cfg=multi_gpu_cfg,
+        )
 
         # Discriminator components
         self.discriminator: AMPDiscriminator = discriminator
@@ -54,15 +77,12 @@ class AMPPPO:
         )
         self.amp_data: MotionDataset = amp_data
         self.amp_normalizer = amp_normalizer
-
-        # PPO components
-        self.actor_critic = actor_critic
-        self.actor_critic.to(self.device)
-        self.storage = None  # initialized later
+        self.min_std = min_std
 
         # Optimizer for policy and discriminator.
         params = [
-            {"params": self.actor_critic.parameters(), "name": "actor_critic"},
+            {"params": self.actor.parameters(), "name": "actor"},
+            {"params": self.critic.parameters(), "name": "critic"},
             {
                 "params": self.discriminator.trunk.parameters(),
                 "weight_decay": 10e-4,
@@ -73,96 +93,44 @@ class AMPPPO:
                 "weight_decay": 10e-2,
                 "name": "amp_head",
             },
-        ]
-        self.optimizer = optim.Adam(params, lr=learning_rate)
+        ]  # NOTE: ADDED
+        self.optimizer = optim.Adam(params, lr=learning_rate)  # NOTE: ADDED
         self.transition = RolloutStorage.Transition()
 
-        # PPO parameters
-        self.clip_param = clip_param
-        self.num_learning_epochs = num_learning_epochs
-        self.num_mini_batches = num_mini_batches
-        self.value_loss_coef = value_loss_coef
-        self.entropy_coef = entropy_coef
-        self.gamma = gamma
-        self.lam = lam
-        self.max_grad_norm = max_grad_norm
-        self.use_clipped_value_loss = use_clipped_value_loss
-
-    def init_storage(
-        self,
-        num_envs,
-        num_transitions_per_env,
-        actor_obs_shape,
-        critic_obs_shape,
-        action_shape,
-    ):
-        self.storage = RolloutStorage(
-            num_envs,
-            num_transitions_per_env,
-            actor_obs_shape,
-            critic_obs_shape,
-            action_shape,
-            self.device,
-        )
-
-    def test_mode(self):
-        self.actor_critic.test()
-
-    def train_mode(self):
-        self.actor_critic.train()
-
-    def act(self, obs, critic_obs, amp_obs):
-        if self.actor_critic.is_recurrent:
-            self.transition.hidden_states = self.actor_critic.get_hidden_states()
-        # Compute the actions and values
-        aug_obs, aug_critic_obs = obs.detach(), critic_obs.detach()
-        self.transition.actions = self.actor_critic.act(aug_obs).detach()
-        self.transition.values = self.actor_critic.evaluate(aug_critic_obs).detach()
-        self.transition.actions_log_prob = self.actor_critic.get_actions_log_prob(
-            self.transition.actions
-        ).detach()
-        self.transition.action_mean = self.actor_critic.action_mean.detach()
-        self.transition.action_sigma = self.actor_critic.action_std.detach()
-        # need to record obs and critic_obs before env.step()
-        self.transition.observations = obs
-        self.transition.critic_observations = critic_obs
+    def act(self, obs, amp_obs=None):  # NOTE: ADDED
+        actions = super().act(obs=obs)
         self.amp_transition.observations = amp_obs
-        return self.transition.actions
+        return actions
 
-    def process_env_step(self, rewards, dones, infos, amp_obs):
-        self.transition.rewards = rewards.clone()
-        self.transition.dones = dones
-        # Bootstrapping on time outs
-        if "time_outs" in infos:
-            self.transition.rewards += self.gamma * torch.squeeze(
-                self.transition.values
-                * infos["time_outs"].unsqueeze(1).to(self.device),
-                1,
-            )
+    def process_env_step(
+        self,
+        obs: TensorDict,
+        rewards: torch.Tensor,
+        dones: torch.Tensor,
+        extras: dict[str, torch.Tensor],
+        amp_obs=None,
+    ) -> None:
+        super().process_env_step(obs=obs, rewards=rewards, dones=dones, extras=extras)
 
-        not_done_idxs = (dones == False).nonzero().squeeze()
         self.amp_storage.insert(self.amp_transition.observations, amp_obs)
-
-        # Record the transition
-        self.storage.add_transitions(self.transition)
-        self.transition.clear()
         self.amp_transition.clear()
-        self.actor_critic.reset(dones)
 
-    def compute_returns(self, last_critic_obs):
-        aug_last_critic_obs = last_critic_obs.detach()
-        last_values = self.actor_critic.evaluate(aug_last_critic_obs).detach()
-        self.storage.compute_returns(last_values, self.gamma, self.lam)
-
-    def update(self):
+    def update(self) -> dict[str, float]:
         mean_value_loss = 0
         mean_surrogate_loss = 0
+        mean_entropy = 0
         mean_amp_loss = 0
         mean_grad_pen_loss = 0
         mean_policy_pred = 0
         mean_expert_pred = 0
-        if self.actor_critic.is_recurrent:
-            generator = self.storage.reccurent_mini_batch_generator(
+        # RND loss
+        mean_rnd_loss = 0 if self.rnd else None
+        # Symmetry loss
+        mean_symmetry_loss = 0 if self.symmetry else None
+
+        # Get mini batch generator
+        if self.actor.is_recurrent or self.critic.is_recurrent:
+            generator = self.storage.recurrent_mini_batch_generator(
                 self.num_mini_batches, self.num_learning_epochs
             )
         else:
@@ -182,35 +150,75 @@ class AMPPPO:
             * self.storage.num_transitions_per_env
             // self.num_mini_batches,
         )
-        for sample, sample_amp_policy, sample_amp_expert in zip(
-            generator, amp_policy_generator, amp_expert_generator
+
+        for batch, sample_amp_policy, sample_amp_expert in zip(
+            generator,
+            amp_policy_generator,
+            amp_expert_generator,
         ):
-            (
-                obs_batch,
-                critic_obs_batch,
-                actions_batch,
-                target_values_batch,
-                advantages_batch,
-                returns_batch,
-                old_actions_log_prob_batch,
-                old_mu_batch,
-                old_sigma_batch,
-                hid_states_batch,
-                masks_batch,
-            ) = sample
-            aug_obs_batch = obs_batch.detach()
-            self.actor_critic.act(
-                aug_obs_batch, masks=masks_batch, hidden_states=hid_states_batch[0]
+            # (
+            #     obs_batch,
+            #     critic_obs_batch,  # NOTE: ADDED
+            #     actions_batch,
+            #     target_values_batch,
+            #     advantages_batch,
+            #     returns_batch,
+            #     old_actions_log_prob_batch,
+            #     old_mu_batch,
+            #     old_sigma_batch,
+            #     hid_states_batch,
+            #     masks_batch,
+            # ) = sample
+
+            original_batch_size = batch.observations.batch_size[0]
+
+            # Check if we should normalize advantages per mini batch
+            if self.normalize_advantage_per_mini_batch:
+                with torch.no_grad():
+                    batch.advantages = (batch.advantages - batch.advantages.mean()) / (
+                        batch.advantages.std() + 1e-8
+                    )  # type: ignore
+
+            # Perform symmetric augmentation
+            if self.symmetry and self.symmetry["use_data_augmentation"]:
+                # Augmentation using symmetry
+                data_augmentation_func = self.symmetry["data_augmentation_func"]
+                # Returned shape: [batch_size * num_aug, ...]
+                batch.observations, batch.actions = data_augmentation_func(
+                    env=self.symmetry["_env"],
+                    obs=batch.observations,
+                    actions=batch.actions,
+                )
+                # Compute number of augmentations per sample
+                num_aug = int(batch.observations.batch_size[0] / original_batch_size)
+                # Repeat the rest of the batch
+                batch.old_actions_log_prob = batch.old_actions_log_prob.repeat(
+                    num_aug, 1
+                )
+                batch.values = batch.values.repeat(num_aug, 1)
+                batch.advantages = batch.advantages.repeat(num_aug, 1)
+                batch.returns = batch.returns.repeat(num_aug, 1)
+
+            aug_obs_batch = obs_batch.detach()  # NOTE: ADDED
+
+            self.actor(
+                aug_obs_batch,
+                masks=masks_batch,
+                hidden_states=hid_states_batch[0],
             )
-            actions_log_prob_batch = self.actor_critic.get_actions_log_prob(
+
+            actions_log_prob_batch = self.actor.get_actions_log_prob(
                 actions_batch
-            )
-            aug_critic_obs_batch = critic_obs_batch.detach()
+            )  # NOTE: ADDED
+
+            aug_critic_obs_batch = critic_obs_batch.detach()  # NOTE: ADDED
+
             value_batch = self.actor_critic.evaluate(
-                aug_critic_obs_batch,
+                aug_critic_obs_batch,  # NOTE: ADDED
                 masks=masks_batch,
                 hidden_states=hid_states_batch[1],
             )
+
             mu_batch = self.actor_critic.action_mean
             sigma_batch = self.actor_critic.action_std
             entropy_batch = self.actor_critic.entropy
