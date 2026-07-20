@@ -8,7 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from beyondAMP.motion.motion_dataset import MotionDatasetCfg
+from beyondAMP.beyondAMP.motion.motion_dataset import MotionDatasetCfg
 
 from .rl_cfg import RslRlOnPolicyRunnerCfg, RslRlPpoAlgorithmCfg
 

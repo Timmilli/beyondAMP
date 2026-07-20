@@ -1,7 +1,7 @@
 import torch
 from .vecenv_wrapper import RslRlVecEnvWrapper
-from beyondAMP.motion.motion_dataset import MotionDataset
-from beyondAMP.motion.weighted_motion_dataset import WeightedMotionDataset
+from beyondAMP.beyondAMP.motion.motion_dataset import MotionDataset
+from beyondAMP.beyondAMP.motion.weighted_motion_dataset import WeightedMotionDataset
 
 
 class AMPEnvWrapper(RslRlVecEnvWrapper):

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.utils.data
 from torch import autograd
 
-from rsl_rl_amp.utils import utils
+from beyondAMP.rsl_rl_amp.utils import utils
 
 
 class AMPDiscriminator(nn.Module):

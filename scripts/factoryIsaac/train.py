@@ -75,9 +75,9 @@ from isaaclab_tasks.utils import get_checkpoint_path, parse_env_cfg
 from isaaclab.utils.dict import print_dict
 from isaaclab.utils.io import dump_yaml
 
-import amp_tasks
+import beyondAMP.amp_tasks
 
-from rsl_rl_amp.runners.amp_on_policy_runner import AMPOnPolicyRunner
+from beyondAMP.rsl_rl_amp.runners.amp_on_policy_runner import AMPOnPolicyRunner
 
 
 def main():

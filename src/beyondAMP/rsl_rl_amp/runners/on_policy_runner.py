@@ -33,12 +33,12 @@ import os
 from collections import deque
 import statistics
 
-from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter as TensorboardSummaryWriter
 import torch
 
-from rsl_rl_amp.algorithms import PPO
-from rsl_rl_amp.modules import ActorCritic, ActorCriticRecurrent
-from rsl_rl_amp.env import VecEnv
+from beyondAMP.rsl_rl_amp.algorithms import PPO
+from beyondAMP.rsl_rl_amp.modules import ActorCritic, ActorCriticRecurrent
+from beyondAMP.rsl_rl_amp.env import VecEnv
 
 
 class OnPolicyRunner:
@@ -49,10 +49,12 @@ class OnPolicyRunner:
         self.policy_cfg = train_cfg["policy"]
         self.device = device
         self.env = env
-        if self.env.num_privileged_obs is not None:
-            num_critic_obs = self.env.num_privileged_obs
+        obs, extras = self.env.get_observations()
+        num_obs = obs.shape[1]
+        if "critic" in extras["observations"]:
+            num_critic_obs = extras["observations"]["critic"].shape[1]
         else:
-            num_critic_obs = self.env.num_obs
+            num_critic_obs = num_obs
         actor_critic_class = eval(self.policy_cfg["class_name"])  # ActorCritic
         actor_critic: ActorCritic = actor_critic_class(
             self.env.num_obs, num_critic_obs, self.env.num_actions, **self.policy_cfg
@@ -83,11 +85,41 @@ class OnPolicyRunner:
     def learn(self, num_learning_iterations, init_at_random_ep_len=False):
         # initialize writer
         if self.log_dir is not None and self.writer is None:
+            # Launch either Tensorboard or Neptune & Tensorboard summary writer(s), default: Tensorboard.
+            self.logger_type = self.cfg.get("logger", "tensorboard")
+            self.logger_type = self.logger_type.lower()
+
+            if self.logger_type == "neptune":
+                from rsl_rl.utils.neptune_utils import NeptuneSummaryWriter
+
+                self.writer = NeptuneSummaryWriter(
+                    log_dir=self.log_dir, flush_secs=10, cfg=self.cfg
+                )
+                self.writer.log_config(
+                    self.env.cfg, self.cfg, self.alg_cfg, self.policy_cfg
+                )
+            elif self.logger_type == "wandb":
+                from rsl_rl.utils.wandb_utils import WandbSummaryWriter
+
+                self.writer = WandbSummaryWriter(
+                    log_dir=self.log_dir, flush_secs=10, cfg=self.cfg
+                )
+                self.writer.log_config(
+                    self.env.cfg, self.cfg, self.alg_cfg, self.policy_cfg
+                )
+            elif self.logger_type == "tensorboard":
+                self.writer = TensorboardSummaryWriter(
+                    log_dir=self.log_dir, flush_secs=10
+                )
+            else:
+                raise AssertionError("logger type not found")
+        if self.log_dir is not None and self.writer is None:
             self.writer = SummaryWriter(log_dir=self.log_dir, flush_secs=10)
         if init_at_random_ep_len:
             self.env.episode_length_buf = torch.randint_like(
                 self.env.episode_length_buf, high=int(self.env.max_episode_length)
             )
+
         obs = self.env.get_observations()
         privileged_obs = self.env.get_privileged_observations()
         critic_obs = privileged_obs if privileged_obs is not None else obs

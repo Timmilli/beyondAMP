@@ -181,7 +181,7 @@ def prepare_wrapper(
     env, args_cli, agent_cfg
 ) -> Tuple[RslRlVecEnvWrapper, callable, dict]:
     print("Using main branch.")
-    from beyondAMP.isaaclab.rsl_rl import AMPEnvWrapper
+    from beyondAMP.beyondAMP.isaaclab.rsl_rl import AMPEnvWrapper
 
     env = AMPEnvWrapper(env, motion_dataset=getattr(agent_cfg, "amp_data", None))
     learn_cfg = {
@@ -194,7 +194,7 @@ def prepare_wrapper(
         if not callable(func_runner):
             func_runner = eval(func_runner)
     else:
-        from rsl_rl_amp.runners import OnPolicyRunner
+        from beyondAMP.rsl_rl_amp.runners import OnPolicyRunner
 
         func_runner = OnPolicyRunner
 

@@ -4,11 +4,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from rsl_rl_amp.modules import ActorCritic
-from rsl_rl_amp.storage import RolloutStorage
-from rsl_rl_amp.storage.replay_buffer import ReplayBuffer
-from rsl_rl_amp.modules.amp_discriminator import AMPDiscriminator
-from beyondAMP.motion.motion_dataset import MotionDataset
+from beyondAMP.rsl_rl_amp.modules import ActorCritic
+from beyondAMP.rsl_rl_amp.storage import RolloutStorage
+from beyondAMP.rsl_rl_amp.storage.replay_buffer import ReplayBuffer
+from beyondAMP.rsl_rl_amp.modules.amp_discriminator import AMPDiscriminator
+from beyondAMP.beyondAMP.motion.motion_dataset import MotionDataset
 
 
 class AMPPPO:
@@ -30,7 +30,7 @@ class AMPPPO:
         learning_rate=1e-3,
         max_grad_norm=1.0,
         use_clipped_value_loss=True,
-        schedule="fixed",
+        schedule="fixed",  # PPO
         desired_kl=0.01,
         device="cpu",
         amp_replay_buffer_size=100000,

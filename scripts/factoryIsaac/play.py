@@ -71,16 +71,16 @@ import gymnasium as gym
 import os
 import torch
 
-import amp_tasks
+import beyondAMP.amp_tasks
 
 # import isaaclab_tasks  # noqa: F401
 from isaaclab_tasks.utils import get_checkpoint_path, parse_env_cfg
 from isaaclab.utils.dict import print_dict
 
 # Import extensions to set up environment tasks
-from isaaclab_tasks.utils.parse_cfg import load_cfg_from_registry
+from beyondAMP.isaaclab_tasks.utils.parse_cfg import load_cfg_from_registry
 
-from rsl_rl_amp.runners import OnPolicyRunner
+from beyondAMP.rsl_rl_amp.runners import OnPolicyRunner
 from beyondAMP.isaaclab.rsl_rl.exporter import (
     export_policy_as_jit,
     export_policy_as_onnx,

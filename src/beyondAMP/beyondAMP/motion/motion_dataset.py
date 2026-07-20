@@ -4,28 +4,7 @@ import os
 import numpy as np
 import torch
 from typing import Sequence, List, Union
-from dataclasses import MISSING
-
-try:
-    from isaaclab.utils import configclass
-except ImportError:
-    # Fallback for backends (e.g. mjlab) that don't depend on IsaacLab.
-    # IsaacLab's configclass lets fields default to the MISSING sentinel and
-    # still come after fields with concrete defaults; stdlib dataclass forbids
-    # that. We rewrite ``= MISSING`` as ``field(default_factory=lambda: MISSING)``
-    # so dataclass sees a default (and ``field(default=MISSING)`` itself means
-    # "no default", so we have to use the factory route).
-    from dataclasses import dataclass as _dataclass, field as _field
-
-    def _missing_factory():
-        return MISSING
-
-    def configclass(cls):  # type: ignore[no-redef]
-        for name, value in list(cls.__dict__.items()):
-            if value is MISSING:
-                setattr(cls, name, _field(default_factory=_missing_factory))
-        return _dataclass(cls)
-
+from dataclasses import dataclass, field
 
 from .utils.math import quat_apply_inverse, quat_conjugate, quat_apply
 from .motion_transition import MotionTransition
@@ -347,11 +326,11 @@ class MotionDataset:
         return res_t, res_tp1
 
 
-@configclass
+@dataclass
 class MotionDatasetCfg:
     class_type: type[MotionDataset] = MotionDataset
     asset_name: str = "robot"
-    motion_files: List[str] = MISSING
-    body_names: List[str] = MISSING
-    amp_obs_terms: List[str] = MISSING
-    anchor_name: str = MISSING
+    motion_files: List[str] = field(default_factory=list)
+    body_names: List[str] = field(default_factory=list)
+    amp_obs_terms: List[str] = field(default_factory=list)
+    anchor_name: str = ""

@@ -13,7 +13,7 @@ from mjlab.tasks.velocity.config.g1.env_cfgs import (
     unitree_g1_rough_env_cfg,
 )
 
-from beyondAMP.mjlab.obs_groups import amp_obs_basic_group
+from beyondAMP.beyondAMP.mjlab.obs_groups import amp_obs_basic_group
 
 # G1 anchor / key bodies used by the AMP discriminator.
 G1_ANCHOR_NAME: str = "pelvis"

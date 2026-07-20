@@ -1,9 +1,10 @@
 from __future__ import annotations
+from dataclasses import dataclass
 
 import torch
 from typing import List, Literal
 
-from .motion_dataset import MotionDataset, MotionDatasetCfg, configclass
+from .motion_dataset import MotionDataset, MotionDatasetCfg
 
 
 class WeightedMotionDataset(MotionDataset):
@@ -87,6 +88,6 @@ class WeightedMotionDataset(MotionDataset):
         return t, tp1
 
 
-@configclass
+@dataclass
 class WeightedMotionDatasetCfg(MotionDatasetCfg):
     class_type: type[WeightedMotionDataset] = WeightedMotionDataset

@@ -8,7 +8,7 @@ from mjlab.managers.observation_manager import (
 )
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 
-from beyondAMP.mjlab import mdp
+from beyondAMP.beyondAMP.mjlab import mdp
 
 
 AMPObsAnchorHardTrackTerms: list[str] = [

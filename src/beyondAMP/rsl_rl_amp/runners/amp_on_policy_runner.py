@@ -10,20 +10,20 @@ import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 import torch
 
-from rsl_rl_amp.algorithms import AMPPPO, PPO, AMPPPOWeighted
-from rsl_rl_amp.modules import ActorCritic, ActorCriticRecurrent
-from rsl_rl_amp.env import VecEnv
-from rsl_rl_amp.modules.amp_discriminator import AMPDiscriminator
-from rsl_rl_amp.utils.utils import Normalizer
+from beyondAMP.rsl_rl_amp.algorithms import AMPPPO, PPO, AMPPPOWeighted
+from beyondAMP.rsl_rl_amp.modules import ActorCritic, ActorCriticRecurrent
+from beyondAMP.rsl_rl_amp.env import VecEnv
+from beyondAMP.rsl_rl_amp.modules.amp_discriminator import AMPDiscriminator
+from beyondAMP.rsl_rl_amp.utils.utils import Normalizer
 
-from beyondAMP.motion.motion_dataset import MotionDataset
+from beyondAMP.beyondAMP.motion.motion_dataset import MotionDataset
 
 if TYPE_CHECKING:
     # Backend-agnostic: the IsaacLab and mjlab wrappers expose the same
     # contract (num_obs, dof_pos_limits, motion_dataset, AMP step shape).
     # Importing only for type hints avoids requiring IsaacLab when running
     # the mjlab backend.
-    from beyondAMP.isaaclab.rsl_rl.amp_wrapper import AMPEnvWrapper
+    from beyondAMP.beyondAMP.isaaclab.rsl_rl.amp_wrapper import AMPEnvWrapper
 
 
 class AMPOnPolicyRunner:

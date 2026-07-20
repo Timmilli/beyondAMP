@@ -6,7 +6,7 @@ from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 
-import beyondAMP.mdp as mdp
+import beyondAMP.beyondAMP.mdp as mdp
 
 from .amp_obs_base import AMPObsBaseCfg
 

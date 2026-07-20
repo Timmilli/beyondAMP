@@ -31,8 +31,8 @@ from mjlab.utils.os import dump_yaml, get_checkpoint_path
 from mjlab.utils.torch import configure_torch_backends
 from mjlab.utils.wrappers import VideoRecorder
 
-from beyondAMP.mjlab.rsl_rl import AMPEnvWrapper, AMPRunnerCfg
-from rsl_rl_amp.runners.amp_on_policy_runner import AMPOnPolicyRunner
+from beyondAMP.beyondAMP.mjlab.rsl_rl import AMPEnvWrapper, AMPRunnerCfg
+from beyondAMP.rsl_rl_amp.runners.amp_on_policy_runner import AMPOnPolicyRunner
 
 
 @dataclass(frozen=True)

@@ -17,7 +17,7 @@ from __future__ import annotations
 import torch
 from torch.nn.functional import sigmoid
 
-from beyondAMP.motion.weighted_motion_dataset import WeightedMotionDataset
+from beyondAMP.beyondAMP.motion.weighted_motion_dataset import WeightedMotionDataset
 from .amp_ppo import AMPPPO  # your original AMP+PPO algorithm
 
 

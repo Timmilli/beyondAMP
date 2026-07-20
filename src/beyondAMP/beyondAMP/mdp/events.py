@@ -7,7 +7,7 @@ import isaaclab.utils.math as math_utils
 from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import SceneEntityCfg
 
-from beyondAMP.motion.motion_dataset import MotionDataset
+from beyondAMP.beyondAMP.motion.motion_dataset import MotionDataset
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedEnv, ManagerBasedRLEnv

@@ -3,11 +3,11 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-from rsl_rl_amp.modules import ActorCritic
-from rsl_rl_amp.storage import RolloutStorage
-from rsl_rl_amp.storage.replay_buffer import ReplayBuffer
-from beyondAMP.motion.motion_dataset import MotionDataset
-from rsl_rl_amp.modules.amp_discriminator import (
+from beyondAMP.rsl_rl_amp.modules import ActorCritic
+from beyondAMP.rsl_rl_amp.storage import RolloutStorage
+from beyondAMP.rsl_rl_amp.storage.replay_buffer import ReplayBuffer
+from beyondAMP.beyondAMP.motion.motion_dataset import MotionDataset
+from beyondAMP.rsl_rl_amp.modules.amp_discriminator import (
     AMPDiscriminator,
 )  # Reusable AMP-style discriminator
 

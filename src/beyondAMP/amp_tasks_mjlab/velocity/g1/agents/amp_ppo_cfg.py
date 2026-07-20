@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from beyondAMP.mjlab.obs_groups import AMPObsBaiscTerms
-from beyondAMP.mjlab.rsl_rl import (
+from beyondAMP.beyondAMP.mjlab.obs_groups import AMPObsBaiscTerms
+from beyondAMP.beyondAMP.mjlab.rsl_rl import (
     AMPPPOAlgorithmCfg,
     AMPRunnerCfg,
     RslRlPpoActorCriticCfg,
 )
-from beyondAMP.motion.motion_dataset import MotionDatasetCfg
+from beyondAMP.beyondAMP.motion.motion_dataset import MotionDatasetCfg
 
 from ..amp_env_cfg import G1_ANCHOR_NAME, G1_KEY_BODY_NAMES
 

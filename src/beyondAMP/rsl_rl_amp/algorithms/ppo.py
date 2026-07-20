@@ -32,8 +32,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from rsl_rl_amp.modules import ActorCritic
-from rsl_rl_amp.storage import RolloutStorage
+from beyondAMP.rsl_rl_amp.modules import ActorCritic
+from beyondAMP.rsl_rl_amp.storage import RolloutStorage
 
 
 class PPO:
